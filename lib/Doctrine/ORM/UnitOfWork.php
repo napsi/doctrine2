@@ -383,12 +383,31 @@ class UnitOfWork implements PropertyChangedListener
         $this->entityUpdates =
         $this->entityDeletions =
         $this->extraUpdates =
-        $this->entityChangeSets =
         $this->collectionUpdates =
         $this->collectionDeletions =
         $this->visitedCollections =
-        $this->scheduledForDirtyCheck =
         $this->orphanRemovals = array();
+		
+		if ($entity === null) {
+        	$this->entityChangeSets =
+        	$this->scheduledForDirtyCheck = array();
+        }
+        elseif (is_object($entity)) {
+        	$oid = spl_object_hash($entity);
+        	$rootClassName = $this->em->getClassMetadata(get_class($entity))->rootEntityName;
+        	 
+        	unset($this->entityChangeSets[$oid]);
+        	unset($this->scheduledForDirtyCheck[$rootClassName][$oid]);
+        }
+        elseif (is_array($entity)) {
+        	foreach ($entity as $object) {
+        		$oid = spl_object_hash($object);
+        		$rootClassName = $this->em->getClassMetadata(get_class($object))->rootEntityName;
+        		 
+        		unset($this->entityChangeSets[$oid]);
+        		unset($this->scheduledForDirtyCheck[$rootClassName][$oid]);
+        	}
+        }
     }
 
     /**
